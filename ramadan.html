@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ramadan Greeting</title>
+<style>
+:root{
+  --night-900:#08141f;
+  --night-800:#0f1f2f;
+  --emerald:#0f5132;
+  --emerald-light:#198754;
+  --royal-gold:#e6b325;
+  --royal-gold-soft:#f5d76e;
+  --text-light:#ffffff;
+  --glass:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+  background:
+  radial-gradient(circle at 20% 20%, #123 0%, transparent 40%),
+  radial-gradient(circle at 80% 80%, #0a2d23 0%, transparent 40%),
+  linear-gradient(135deg,var(--night-900),var(--night-800));
+  color:var(--text-light);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+canvas{
+  position:fixed;
+  inset:0;
+  z-index:-1;
+}
+.card{
+  backdrop-filter:blur(30px);
+  background:linear-gradient(
+    145deg,
+    rgba(15, 16, 114, 0.402),
+    rgba(15, 16, 16, 0.402)
+  );
+  border:1px solid var(--border);
+  border-radius:28px;
+  padding:50px 40px;
+  width:92%;
+  max-width:650px;
+  text-align:center;
+  box-shadow:
+    0 0 80px rgba(57, 135, 208, 0.15),
+    0 20px 60px rgba(5, 224, 235, 0.6);
+  transition:opacity .4s ease, transform .4s ease;
+}
+.fade{opacity:0;transform:scale(.97)}
+.moon{
+  width:90px;
+  height:90px;
+  margin:0 auto 20px;
+  border-radius:50%;
+  background:
+  radial-gradient(circle at 30% 30%, var(--royal-gold-soft), var(--royal-gold));
+  box-shadow:
+    0 0 40px rgba(230,179,37,.6),
+    inset -15px 0 30px rgba(0,0,0,.4);
+  position:relative;
+  animation:moonPulse 5s ease-in-out infinite;
+}
+.moon::after{
+  content:'';
+  position:absolute;
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  background:var(--night-900);
+  left:25px;
+  top:0;
+}
+@keyframes moonPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.05)}
+}
+h1{
+  font-size:28px;
+  line-height:1.5;
+  font-weight:600;
+  letter-spacing:.4px;
+  margin-bottom:10px;
+}
+.subtitle{
+  font-size:16px;
+  opacity:.85;
+  margin-bottom:25px;
+}
+.signature{
+  margin-top:25px;
+  font-style:italic;
+  opacity:.85;
+}
+.controls{
+  margin-top:30px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:12px;
+}
+button,select{
+  padding:10px 18px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+  background:linear-gradient(
+    135deg,
+    var(--royal-gold),
+    var(--royal-gold-soft)
+  );
+  color:black;
+  transition:all .25s ease;
+}
+button:hover,select:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 25px rgba(230,179,37,.4);
+}
+.sparkle{
+  position:absolute;
+  width:6px;
+  height:6px;
+  background:radial-gradient(circle,var(--royal-gold-soft),transparent);
+  border-radius:50%;
+  opacity:.8;
+  animation:float 7s linear infinite;
+}
+
+@keyframes float{
+  from{transform:translateY(0);opacity:.8}
+  to{transform:translateY(-400px);opacity:0}
+}
+@media(max-width:500px){
+  .controls{flex-direction:column}
+}
+@media (prefers-reduced-motion: reduce){
+  .moon{animation:none}
+}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="card" id="card">
+<div class="moon"></div>
+<h1 id="mainMessage">
+Ramadan Mubarak — May Allah accept our fasts and prayers
+</h1>
+<div class="subtitle">
+A month of mercy and blessings
+</div>
+<div class="signature">
+From Abdul Mutaal 🌙
+</div>
+<div class="controls">
+<select id="lang">
+<option value="en">🇬🇧 EN</option>
+<option value="ar">🇸🇦 AR</option>
+<option value="ur">🇵🇰 UR</option>
+<option value="ms">🇲🇾 MS</option>
+</select>
+<button id="random">Random Message</button>
+</div>
+</div>
+<script>
+(function(){
+const data={
+en:[
+"Ramadan Mubarak — May Allah accept our fasts and prayers",
+"May this Ramadan bring peace and mercy",
+"Wishing you reflection, faith and renewal"
+],
+ar:[
+"رمضان مبارك — تقبل الله منا ومنكم صالح الأعمال",
+"نسأل الله أن يبلغنا رمضان بالخير",
+"جعلنا الله من المقبولين"
+],
+ur:[
+"رمضان مبارک — اللہ ہمارے روزوں اور دعاؤں کو قبول فرمائے",
+"اللہ آپ کی دعائیں قبول فرمائے",
+"یہ رمضان آپ کے لیے خیر لائے"
+],
+ms:[
+"Selamat Menunaikan Ibadah Puasa",
+"Semoga doa anda dimakbulkan",
+"Ramadan membawa ketenangan jiwa"
+]
+};
+const message=document.getElementById("mainMessage");
+const langSelect=document.getElementById("lang");
+langSelect.addEventListener("change",()=>{
+  message.textContent=data[langSelect.value][0];
+  localStorage.setItem("lang",langSelect.value);
+});
+const saved=localStorage.getItem("lang");
+if(saved){
+  langSelect.value=saved;
+  message.textContent=data[saved][0];
+}
+document.getElementById("random").onclick=function(){
+  const arr=data[langSelect.value];
+  message.textContent=
+    arr[Math.floor(Math.random()*arr.length)];
+};
+const canvas=document.getElementById("stars");
+const ctx=canvas.getContext("2d");
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+}
+resize();
+window.onresize=resize;
+const stars=[];
+for(let i=0;i<140;i++){
+  stars.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    r:Math.random()*1.5
+  });
+}
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="white";
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+function sparkle(){
+  const s=document.createElement("div");
+  s.className="sparkle";
+  s.style.left=Math.random()*window.innerWidth+"px";
+  s.style.top=window.innerHeight+"px";
+  document.body.appendChild(s);
+  setTimeout(()=>s.remove(),7000);
+}
+setInterval(sparkle,900);
+})();
+</script>
+</body>
+</html>
